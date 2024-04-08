@@ -5,7 +5,6 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 from torch.autograd import Variable
-from fastfeedforward import FastFeedForward
 import numpy as np
 from tokenizer import Tokenizer
 from scipy.fft import dct

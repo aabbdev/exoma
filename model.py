@@ -479,7 +479,7 @@ class ExomaForCausalLM(nn.Module):
         top_p: float = 1.0,
         top_k: int = 100,
     ) -> Union[str, Sequence[str]]:
-        """Generates responses for given prompts using Gemma model."""
+        """Generates responses for given prompts using Exoma model."""
         # If a single prompt is provided, treat it as a batch of 1.
         is_str_prompt = isinstance(prompts, str)
         if is_str_prompt:

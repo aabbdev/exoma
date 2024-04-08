@@ -1,7 +1,5 @@
-# exoma-1b
+# Exoma
 
-This repository contains the code and data for the exoma-1b project.
-
-The exoma-1b project is an experiment for the paper "Exponentially Faster Language Modeling" by [Peter Belcak and Roger Wattenhofer](https://arxiv.org/pdf/2311.10770.pdf).
+This repository contains the code and data for the exoma project.
 
 The code is written in Python and uses the PyTorch library.

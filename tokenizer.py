@@ -18,7 +18,7 @@ class Tokenizer:
             f"#BOS ID: {self.bos_id} - EOS ID: {self.eos_id} - PAD ID: {self.pad_id}"
         )
 
-    def encode(self, text: str, bos: bool, eos: bool) -> List[int]:
+    def encode(self, text: str, bos: bool, eos: bool, pad: bool = False, max_length: int = -1) -> List[int]:
         """
         Encodes a string into a list of token IDs.
 
@@ -31,12 +31,18 @@ class Tokenizer:
             List[int]: A list of token IDs.
         """
         assert type(text) is str
-        t = list(text.encode("utf8"))
+        tokens = list(text.encode("utf8"))
+        numSpecials = sum([bos, eos])
+
+        if pad and max_length > 0:
+            tokens = tokens[:max_length - numSpecials]
         if bos:
-            t = [self.bos_id] + t
+            tokens = [self.bos_id] + tokens
         if eos:
-            t = t + [self.eos_id]
-        return t
+            tokens += [self.eos_id]
+        if pad and len(tokens) < max_length:
+            tokens += [self.pad_id] * (max_length - len(tokens))
+        return tokens
 
     def decode(self, tokens: List[int]) -> str:
         """

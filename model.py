@@ -7,8 +7,8 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 import numpy as np
 from tokenizer import Tokenizer
+from math import floor, log2, sqrt
 from scipy.fft import dct
-
 
 @dataclass
 class ModelArgs:
@@ -21,6 +21,7 @@ class ModelArgs:
     max_batch_size: int = 32
     max_seq_len: int = 2048
 
+# TODO: replace dct with pytorch implementation, have to check axis=0
 def dct_pytorch(x, norm=None):
     """
     Discrete Cosine Transform, Type II (a.k.a. the DCT)
@@ -261,8 +262,8 @@ class ExomaAttention(nn.Module):
     def _build_projection(self):
         icdf_w = torch.distributions.Normal(0, 1).icdf(torch.diag_embed(torch.diag(torch.rand(self.head_dim, self.head_dim))))
         icdf_w = torch.where(torch.isinf(icdf_w), torch.full_like(icdf_w, 0), icdf_w)
-        C = dct(torch.eye(self.head_dim, self.head_dim), axis=0,norm='ortho')
-        C = C.type(torch.FloatTensor)
+        C = dct(np.eye(self.head_dim, self.head_dim), axis=0,norm='ortho')
+        C = torch.from_numpy(C).type(torch.FloatTensor)
         return nn.Parameter((C @ icdf_w).contiguous(), requires_grad=False)
     def forward(
         self,
@@ -310,11 +311,12 @@ class ExomaAttention(nn.Module):
             output = torch.matmul(scores, v)
             return output
         def DCTAttention(q, k, v):
+            # missing D1/D2 from original implementation - https://github.com/YuchuanTian/DiJiang/blob/main/modeling/pythia-1B-dijiang/modeling_gpt_neox_dijiang.py
             query = nn.functional.softmax(torch.matmul(q, self.proj_matrix), dim=-1)
             key = nn.functional.softmax(torch.matmul(k.transpose(2, 3), self.proj_matrix), dim=-1)
             scores = torch.matmul(key, v)
             return torch.matmul(scores, query)
-        output = DCTAttention(q, k, v)
+        output = selfAttention(q, k, v)
         # [batch_size, input_len, hidden_dim]
         return self.o_proj(output.transpose(1, 2).contiguous().view(batch_size, input_len, -1))
 
